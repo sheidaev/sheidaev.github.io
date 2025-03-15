@@ -1,1 +1,0 @@
-# sheidaev.github.io
