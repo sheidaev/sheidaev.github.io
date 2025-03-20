@@ -18,7 +18,7 @@
 # You can create any custom variable you would like, and they will be accessible
 # in the templates via {{ site.myvariable }}.
 
-title: Блог інженера з продуктивності високонавантажених систем
+title: Блог перформанс-інженера Костянтина Шейдаєва
 email: kostiantyn.sheidaev@gmail.com
 description: >- # this means to ignore newlines until "baseurl:"
   Ласкаво просимо до блогу, присвяченого навантажувальному тестуванню та інженерії продуктивності.
@@ -26,7 +26,7 @@ description: >- # this means to ignore newlines until "baseurl:"
   методи тестування, інструменти та найкращі практики. Дізнайтеся, як забезпечити стабільну роботу ваших
    систем під великим навантаженням, підвищити ефективність та надійність. 
 baseurl: "" # the subpath of your site, e.g. /blog
-url: "" # the base hostname & protocol for your site, e.g. http://example.com
+url: "https://sheidaev.com" # the base hostname & protocol for your site, e.g. http://example.com
 #twitter_username: jekyllrb
 github_username: sheidaev
 
