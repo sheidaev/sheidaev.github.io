@@ -1,5 +1,153 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://sheidaev.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://sheidaev.com/" rel="alternate" type="text/html" /><updated>2025-03-20T12:34:57+02:00</updated><id>https://sheidaev.com/feed.xml</id><title type="html">Блог перформанс-інженера Костянтина Шейдаєва</title><subtitle>Ласкаво просимо до блогу, присвяченого навантажувальному тестуванню та інженерії продуктивності. Тут ви знайдете статті, поради та інсайти про оптимізацію продуктивності високонавантажених систем, методи тестування, інструменти та найкращі практики. Дізнайтеся, як забезпечити стабільну роботу ваших
- систем під великим навантаженням, підвищити ефективність та надійність. </subtitle><entry><title type="html">Як визначити ємність системи?</title><link href="https://sheidaev.com/2025/03/15/capacity-testing.html" rel="alternate" type="text/html" title="Як визначити ємність системи?" /><published>2025-03-15T17:30:00+02:00</published><updated>2025-03-15T17:30:00+02:00</updated><id>https://sheidaev.com/2025/03/15/capacity-testing</id><content type="html" xml:base="https://sheidaev.com/2025/03/15/capacity-testing.html"><![CDATA[<h3 id="-головне-питання-навантажувального-тестування">&gt; Головне питання навантажувального тестування</h3>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://sheidaev.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://sheidaev.com/" rel="alternate" type="text/html" /><updated>2025-03-23T23:06:20+02:00</updated><id>https://sheidaev.com/feed.xml</id><title type="html">Блог перформанс-інженера Костянтина Шейдаєва</title><subtitle>Ласкаво просимо до блогу, присвяченого навантажувальному тестуванню та інженерії продуктивності. Тут ви знайдете статті, поради та інсайти про оптимізацію продуктивності високонавантажених систем, методи тестування, інструменти та найкращі практики. Дізнайтеся, як забезпечити стабільну роботу ваших
+ систем під великим навантаженням, підвищити ефективність та надійність. </subtitle><entry><title type="html">httpstat - візуалізація статистики HTTP-запитів для богатих</title><link href="https://sheidaev.com/2025/03/23/httpstat.html" rel="alternate" type="text/html" title="httpstat - візуалізація статистики HTTP-запитів для богатих" /><published>2025-03-23T16:30:00+02:00</published><updated>2025-03-23T16:30:00+02:00</updated><id>https://sheidaev.com/2025/03/23/httpstat</id><content type="html" xml:base="https://sheidaev.com/2025/03/23/httpstat.html"><![CDATA[<h3 id="-що-таке-httpstat">&gt; Що таке httpstat?</h3>
+
+<p>Не потрібен опис, достатньо однієї картинки:</p>
+
+<p><img src="/assets/images/httpstat/metrics.png" alt="Приклад роботи httpstat" style="width: 100%; display: block; margin: 0 auto;" /></p>
+
+<p>Але, кілька слів я таки скажу:</p>
+<ul>
+  <li>Я його використовую, щоб швидко зрозуміти на якому етапі HTTP-запиту ми втрачаємо час.</li>
+  <li>Його завдання – спрямувати тебе в потрібному напрямку і зробити цей процес максимально простим, наочним і прозорим.</li>
+</ul>
+
+<h3 id="-встановлення">&gt; Встановлення</h3>
+
+<p>Основні способи встановлення httpstat:</p>
+
+<ol>
+  <li><strong>Пряме завантаження скрипту</strong>:
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>wget https://raw.githubusercontent.com/reorx/httpstat/master/httpstat.py
+</code></pre></div>    </div>
+  </li>
+  <li><strong>Через pip</strong>:
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pip install httpstat
+</code></pre></div>    </div>
+  </li>
+  <li><strong>Через homebrew</strong> (тільки для macOS):
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>brew install httpstat
+</code></pre></div>    </div>
+  </li>
+  <li><strong>Для користувачів Windows</strong> рекомендується не бути користувачами Windows.</li>
+</ol>
+
+<h3 id="-налаштування">&gt; Налаштування</h3>
+
+<p>Інструмент підтримує багато змінних середовища для контролю своєї поведінки:</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">HTTPSTAT_SHOW_BODY</code> - показувати тіло відповіді (обмежено 1023 байтами)</li>
+  <li><code class="language-plaintext highlighter-rouge">HTTPSTAT_SHOW_IP</code> - показувати віддалену та локальну IP/порт адресу</li>
+  <li><code class="language-plaintext highlighter-rouge">HTTPSTAT_SHOW_SPEED</code> - відображати швидкість завантаження та вивантаження</li>
+  <li><code class="language-plaintext highlighter-rouge">HTTPSTAT_SAVE_BODY</code> - зберігати тіло відповіді у тимчасовому файлі</li>
+  <li><code class="language-plaintext highlighter-rouge">HTTPSTAT_CURL_BIN</code> - вказати шлях до бінарного файлу curl</li>
+  <li><code class="language-plaintext highlighter-rouge">HTTPSTAT_METRICS_ONLY</code> - виводити лише метрики у форматі JSON</li>
+  <li><code class="language-plaintext highlighter-rouge">HTTPSTAT_DEBUG</code> - режим відлагодження</li>
+</ul>
+
+<p>Особисто я використовую лише дві:</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">HTTPSTAT_SHOW_SPEED=true</code></li>
+  <li><code class="language-plaintext highlighter-rouge">HTTPSTAT_SAVE_BODY=false</code></li>
+</ul>
+
+<h3 id="-використання">&gt; Використання</h3>
+
+<p>Оскільки httpstat є обгорткою для curl, ви можете передавати будь-які підтримувані curl-опції після URL.</p>
+
+<p><img src="/assets/images/httpstat/output-explane.png" alt="Приклад роботи httpstat" style="width: 100%; display: block; margin: 0 auto;" /></p>
+
+<h4 id="get-запити">GET запити:</h4>
+
+<ol>
+  <li><strong>Базовий GET</strong>:
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>httpstat httpbin.org/get
+</code></pre></div>    </div>
+  </li>
+  <li><strong>GET з параметрами в URL</strong>:
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>httpstat "httpbin.org/get?param1=value1&amp;param2=value2"
+</code></pre></div>    </div>
+  </li>
+  <li><strong>GET з користувацькими заголовками</strong>:
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>httpstat httpbin.org/get -H "User-Agent: MyCustomAgent" -H "Accept: application/json"
+</code></pre></div>    </div>
+  </li>
+  <li><strong>GET з аутентифікацією</strong>:
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>httpstat httpbin.org/basic-auth/user/pass -u user:pass
+</code></pre></div>    </div>
+  </li>
+  <li><strong>GET з відображенням швидкості передачі</strong>:
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>HTTPSTAT_SHOW_SPEED=true httpstat http://cachefly.cachefly.net/10mb.test
+</code></pre></div>    </div>
+  </li>
+  <li><strong>GET з відображенням тіла відповіді</strong>:
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>HTTPSTAT_SHOW_BODY=true httpstat httpbin.org/json
+</code></pre></div>    </div>
+  </li>
+  <li><strong>GET запит з увімкненим детальним режимом</strong>:
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>httpstat httpbin.org/get -v
+</code></pre></div>    </div>
+  </li>
+</ol>
+
+<h4 id="post-запити">POST запити:</h4>
+
+<ol>
+  <li><strong>Базовий POST з даними форми</strong>:
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>httpstat httpbin.org/post -X POST -d "name=value&amp;foo=bar"
+</code></pre></div>    </div>
+  </li>
+  <li><strong>POST з JSON даними</strong>:
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>httpstat httpbin.org/post -X POST -H "Content-Type: application/json" -d '{"key1":"value1","key2":"value2"}'
+</code></pre></div>    </div>
+  </li>
+  <li><strong>POST з URL-encoded даними</strong>:
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>httpstat httpbin.org/post -X POST --data-urlencode "title=Test Title" --data-urlencode "body=This is the content"
+</code></pre></div>    </div>
+  </li>
+  <li><strong>POST з файлом</strong>:
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>httpstat httpbin.org/post -X POST -F "file=@/path/to/file.txt"
+</code></pre></div>    </div>
+  </li>
+  <li><strong>POST з аутентифікацією</strong>:
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>httpstat httpbin.org/post -X POST -u username:password -d "content=test"
+</code></pre></div>    </div>
+  </li>
+</ol>
+
+<h4 id="put-запити">PUT запити:</h4>
+
+<ol>
+  <li><strong>Базовий PUT з даними</strong>:
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>httpstat httpbin.org/put -X PUT -d "key=updatedvalue"
+</code></pre></div>    </div>
+  </li>
+  <li><strong>PUT запит з JSON даними</strong>:
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>httpstat httpbin.org/put -X PUT -H "Content-Type: application/json" -d '{"status":"updated","id":123}'
+</code></pre></div>    </div>
+  </li>
+  <li><strong>PUT запит для завантаження файлу</strong>:
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>httpstat httpbin.org/put -X PUT --upload-file /path/to/file.txt
+</code></pre></div>    </div>
+  </li>
+  <li><strong>PUT запит з керуванням перенаправленням</strong>:
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>httpstat httpbin.org/put -X PUT -L -d "content=test"
+</code></pre></div>    </div>
+  </li>
+  <li><strong>PUT запит з додатковими налаштуваннями безпеки</strong>:
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>httpstat httpbin.org/put -X PUT --tlsv1.2 --ciphers HIGH -d "secure_data=value"
+</code></pre></div>    </div>
+    <h3 id="-висновки">&gt; Висновки</h3>
+  </li>
+</ol>
+
+<ul>
+  <li>інструмент крутий;</li>
+  <li>встановити легко;</li>
+  <li>в статті купа прикладів;</li>
+  <li>треба використовувати, але не витрачайте на цьому етапы багато часу, зрозуміли де повільно і пірнайте глибше.</li>
+</ul>
+
+<p><a href="https://github.com/reorx/httpstat">Перейти до GitHub-репозиторію</a></p>]]></content><author><name></name></author><category term="tools" /><category term="network" /><category term="curl" /><category term="http" /><category term="performance metrics" /><summary type="html"><![CDATA[&gt; Що таке httpstat?]]></summary></entry><entry><title type="html">Як визначити ємність системи?</title><link href="https://sheidaev.com/2025/03/15/capacity-testing.html" rel="alternate" type="text/html" title="Як визначити ємність системи?" /><published>2025-03-15T17:30:00+02:00</published><updated>2025-03-15T17:30:00+02:00</updated><id>https://sheidaev.com/2025/03/15/capacity-testing</id><content type="html" xml:base="https://sheidaev.com/2025/03/15/capacity-testing.html"><![CDATA[<h3 id="-головне-питання-навантажувального-тестування">&gt; Головне питання навантажувального тестування</h3>
 
 <p>Яка кількість одночасних запитів за одиницю часу здатна обробити ваша система без деградації за часом відповіді?</p>
 
