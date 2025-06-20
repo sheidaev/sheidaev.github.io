@@ -10,6 +10,8 @@ layout: compress
 
     {{ content }}
 
+    <h2>Що почитати</h2>
+
     <ul class="blog-posts">
         {% assign post_list = '' | split: ',' %}
         {% for post in site.posts %}
@@ -31,6 +33,19 @@ layout: compress
         </li>
         {% endunless %}
         {% assign previous = post %}
+        {% endfor %}
+    </ul>
+
+    <hr style="border: none; border-top: 3px dotted #a05a00; background: #f8f4ea; height: 0; margin: 2em 0;">
+
+    <h2>Курси</h2>
+
+    <ul class="courses-block">
+        {% assign courses = site.pages | where_exp: "item", "item.path contains 'study/'" %}
+        {% for course in courses %}
+        <li>
+            <a href="{{ site.baseurl }}{{ course.url }}">{{ course.title }}</a>
+        </li>
         {% endfor %}
     </ul>
 

@@ -1,5 +1,230 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://sheidaev.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://sheidaev.com/" rel="alternate" type="text/html" /><updated>2025-03-20T12:34:57+02:00</updated><id>https://sheidaev.com/feed.xml</id><title type="html">Блог перформанс-інженера Костянтина Шейдаєва</title><subtitle>Ласкаво просимо до блогу, присвяченого навантажувальному тестуванню та інженерії продуктивності. Тут ви знайдете статті, поради та інсайти про оптимізацію продуктивності високонавантажених систем, методи тестування, інструменти та найкращі практики. Дізнайтеся, як забезпечити стабільну роботу ваших
- систем під великим навантаженням, підвищити ефективність та надійність. </subtitle><entry><title type="html">Як визначити ємність системи?</title><link href="https://sheidaev.com/2025/03/15/capacity-testing.html" rel="alternate" type="text/html" title="Як визначити ємність системи?" /><published>2025-03-15T17:30:00+02:00</published><updated>2025-03-15T17:30:00+02:00</updated><id>https://sheidaev.com/2025/03/15/capacity-testing</id><content type="html" xml:base="https://sheidaev.com/2025/03/15/capacity-testing.html"><![CDATA[<h3 id="-головне-питання-навантажувального-тестування">&gt; Головне питання навантажувального тестування</h3>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://sheidaev.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://sheidaev.com/" rel="alternate" type="text/html" /><updated>2025-06-19T13:45:16+03:00</updated><id>https://sheidaev.com/feed.xml</id><title type="html">Блог перформанс-інженера Костянтина Шейдаєва</title><subtitle>Блог перформанс-інженера Костянтина Шейдаєва. Тут матюкаються і говорять про перформанс-інженірінг.</subtitle><entry><title type="html">Time To First Byte (TTFB) та його кент 103 Early Hints</title><link href="https://sheidaev.com/2025/03/27/ttfb.html" rel="alternate" type="text/html" title="Time To First Byte (TTFB) та його кент 103 Early Hints" /><published>2025-03-27T16:30:00+02:00</published><updated>2025-03-27T16:30:00+02:00</updated><id>https://sheidaev.com/2025/03/27/ttfb</id><content type="html" xml:base="https://sheidaev.com/2025/03/27/ttfb.html"><![CDATA[<p><strong>TTFB</strong> - простими словами, це час, який проходить між моментом, коли браузер відправляє запит на сервер, та моментом, коли він отримує перший байт даних у відповідь.</p>
+
+<p>Вважається, що “ровний пацан” має TTFB &lt; 800мс, а якщо TTFB &gt; 1800мс, то “пацан більше неровний”.</p>
+
+<div style="text-align: center;">
+    <img src="/assets/images/ttfb/ttfb-good-bad.png" alt="TTFB Good vs Bad" />
+</div>
+
+<p>При цьому, якщо орієнтуватись на світові тренди, потрапити в 18% “школоти” дуже не хочеться:</p>
+
+<p><img src="/assets/images/ttfb/ttfb-trend.png" alt="TTFB Trends" /></p>
+
+<p>Тож давайте розберемося, як ця метрика вираховується і як її оптимізувати.</p>
+
+<h2 id="як-вираховується-і-з-чого-складається">Як вираховується і з чого складається?</h2>
+
+<p><img src="/assets/images/ttfb/ttfb-schema.png" alt="TTFB Schema" /></p>
+
+<p><strong>TTFB</strong> - це сума наступних фаз запиту:</p>
+
+<ol>
+  <li><strong>Час на перенаправлення (redirect)</strong>
+    <ul>
+      <li>Зазвичай дуже малий, якщо є - від 10-50мс</li>
+      <li>Часто відсутній взагалі</li>
+    </ul>
+  </li>
+  <li><strong>Час на запуск Service Worker</strong>
+    <ul>
+      <li>Якщо використовується - від 5-20мс</li>
+      <li>Більшість сайтів не використовують</li>
+    </ul>
+  </li>
+  <li><strong>Час на отримання IP-адреси (DNS lookup)</strong>
+    <ul>
+      <li>Зазвичай 20-100мс</li>
+      <li>Може бути більшим при проблемах з DNS</li>
+      <li>Часто кешується</li>
+    </ul>
+  </li>
+  <li><strong>Час на встановлення з’єднання (TLS)</strong>
+    <ul>
+      <li>Від 50-200мс</li>
+      <li>Залежить від відстані до сервера</li>
+    </ul>
+  </li>
+  <li><strong>Час до першого байту відповіді</strong>
+    <ul>
+      <li>Це найбільша частина - 70-90% від загального TTFB</li>
+      <li>Включає:
+        <ul>
+          <li>Час обробки запиту на сервері</li>
+          <li>Час генерації відповіді</li>
+          <li>Час передачі даних по мережі</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ol>
+
+<p>На цьому етапі стає зрозуміло, що успіх складається з двох компонентів:</p>
+<ol>
+  <li>Займатися оптимізацією бекенду і мережевої інфраструктури (для зменшення часу до першого байту відповіді)</li>
+  <li>Використовувати Early Hints, щоб винести час обробки запиту на сервері “за душки”</li>
+</ol>
+
+<h2 id="що-таке-early-hints">Що таке Early Hints?</h2>
+
+<p>HTTP 103 Early Hints - статусний код HTTP, який дозволяє серверу відправляти попередні відповіді браузеру до того, як буде готова основна відповідь.</p>
+
+<h3 id="як-це-працює">Як це працює?</h3>
+<p><img src="/assets/images/ttfb/compare-early-hints.png" alt="Early hints" /></p>
+
+<p>Однак, не всі браузери підтримують 103 статус, тому потрібна fallback стратегія. Це означає, що потрібно мати запасний варіант на випадок, якщо браузер не підтримує цю функцію.</p>
+
+<h2 id="висновок">Висновок</h2>
+<p><strong>TTFB</strong>  - одна з ключових метрік у Core Web Vitals, отже, вона напряму впливає на ранжування вашого сайту в пошуковій видачі.<br />
+Звісно, правильний шлях - впливати на неї через оптимізацію швидкості обробки запитів на сервері. (впевний ви це робите, ви ж прийшли читати цю хуйню)<br />
+Але, якщо треба швидкі результати, то цю метрику можна трошки наїбати використовуючи Early Hints, не забуваючи про fallback.</p>]]></content><author><name></name></author><category term="web" /><category term="performance" /><category term="metrics" /><summary type="html"><![CDATA[TTFB - простими словами, це час, який проходить між моментом, коли браузер відправляє запит на сервер, та моментом, коли він отримує перший байт даних у відповідь.]]></summary></entry><entry><title type="html">httpstat - візуалізація статистики HTTP-запитів для богатих</title><link href="https://sheidaev.com/2025/03/23/httpstat.html" rel="alternate" type="text/html" title="httpstat - візуалізація статистики HTTP-запитів для богатих" /><published>2025-03-23T16:30:00+02:00</published><updated>2025-03-23T16:30:00+02:00</updated><id>https://sheidaev.com/2025/03/23/httpstat</id><content type="html" xml:base="https://sheidaev.com/2025/03/23/httpstat.html"><![CDATA[<h3 id="-що-таке-httpstat">&gt; Що таке httpstat?</h3>
+
+<p>Не потрібен опис, достатньо однієї картинки:</p>
+
+<p><img src="/assets/images/httpstat/metrics.png" alt="Приклад роботи httpstat" style="width: 100%; display: block; margin: 0 auto;" /></p>
+
+<p>Але, кілька слів я таки скажу:</p>
+<ul>
+  <li>Я його використовую, щоб швидко зрозуміти на якому етапі HTTP-запиту ми втрачаємо час.</li>
+  <li>Його завдання – спрямувати тебе в потрібному напрямку і зробити цей процес максимально простим, наочним і прозорим.</li>
+</ul>
+
+<h3 id="-встановлення">&gt; Встановлення</h3>
+
+<p>Основні способи встановлення httpstat:</p>
+
+<ol>
+  <li><strong>Пряме завантаження скрипту</strong>:
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>wget https://raw.githubusercontent.com/reorx/httpstat/master/httpstat.py
+</code></pre></div>    </div>
+  </li>
+  <li><strong>Через pip</strong>:
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pip install httpstat
+</code></pre></div>    </div>
+  </li>
+  <li><strong>Через homebrew</strong> (тільки для macOS):
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>brew install httpstat
+</code></pre></div>    </div>
+  </li>
+  <li><strong>Для користувачів Windows</strong> рекомендується не бути користувачами Windows.</li>
+</ol>
+
+<h3 id="-налаштування">&gt; Налаштування</h3>
+
+<p>Інструмент підтримує багато змінних середовища для контролю своєї поведінки:</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">HTTPSTAT_SHOW_BODY</code> - показувати тіло відповіді (обмежено 1023 байтами)</li>
+  <li><code class="language-plaintext highlighter-rouge">HTTPSTAT_SHOW_IP</code> - показувати віддалену та локальну IP/порт адресу</li>
+  <li><code class="language-plaintext highlighter-rouge">HTTPSTAT_SHOW_SPEED</code> - відображати швидкість завантаження та вивантаження</li>
+  <li><code class="language-plaintext highlighter-rouge">HTTPSTAT_SAVE_BODY</code> - зберігати тіло відповіді у тимчасовому файлі</li>
+  <li><code class="language-plaintext highlighter-rouge">HTTPSTAT_CURL_BIN</code> - вказати шлях до бінарного файлу curl</li>
+  <li><code class="language-plaintext highlighter-rouge">HTTPSTAT_METRICS_ONLY</code> - виводити лише метрики у форматі JSON</li>
+  <li><code class="language-plaintext highlighter-rouge">HTTPSTAT_DEBUG</code> - режим відлагодження</li>
+</ul>
+
+<p>Особисто я використовую лише дві:</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">HTTPSTAT_SHOW_SPEED=true</code></li>
+  <li><code class="language-plaintext highlighter-rouge">HTTPSTAT_SAVE_BODY=false</code></li>
+</ul>
+
+<h3 id="-використання">&gt; Використання</h3>
+
+<p>Оскільки httpstat є обгорткою для curl, ви можете передавати будь-які підтримувані curl-опції після URL.</p>
+
+<p><img src="/assets/images/httpstat/output-explane.png" alt="Приклад роботи httpstat" style="width: 100%; display: block; margin: 0 auto;" /></p>
+
+<h4 id="get-запити">GET запити:</h4>
+
+<ol>
+  <li><strong>Базовий GET</strong>:
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>httpstat httpbin.org/get
+</code></pre></div>    </div>
+  </li>
+  <li><strong>GET з параметрами в URL</strong>:
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>httpstat "httpbin.org/get?param1=value1&amp;param2=value2"
+</code></pre></div>    </div>
+  </li>
+  <li><strong>GET з користувацькими заголовками</strong>:
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>httpstat httpbin.org/get -H "User-Agent: MyCustomAgent" -H "Accept: application/json"
+</code></pre></div>    </div>
+  </li>
+  <li><strong>GET з аутентифікацією</strong>:
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>httpstat httpbin.org/basic-auth/user/pass -u user:pass
+</code></pre></div>    </div>
+  </li>
+  <li><strong>GET з відображенням швидкості передачі</strong>:
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>HTTPSTAT_SHOW_SPEED=true httpstat http://cachefly.cachefly.net/10mb.test
+</code></pre></div>    </div>
+  </li>
+  <li><strong>GET з відображенням тіла відповіді</strong>:
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>HTTPSTAT_SHOW_BODY=true httpstat httpbin.org/json
+</code></pre></div>    </div>
+  </li>
+  <li><strong>GET запит з увімкненим детальним режимом</strong>:
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>httpstat httpbin.org/get -v
+</code></pre></div>    </div>
+  </li>
+</ol>
+
+<h4 id="post-запити">POST запити:</h4>
+
+<ol>
+  <li><strong>Базовий POST з даними форми</strong>:
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>httpstat httpbin.org/post -X POST -d "name=value&amp;foo=bar"
+</code></pre></div>    </div>
+  </li>
+  <li><strong>POST з JSON даними</strong>:
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>httpstat httpbin.org/post -X POST -H "Content-Type: application/json" -d '{"key1":"value1","key2":"value2"}'
+</code></pre></div>    </div>
+  </li>
+  <li><strong>POST з URL-encoded даними</strong>:
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>httpstat httpbin.org/post -X POST --data-urlencode "title=Test Title" --data-urlencode "body=This is the content"
+</code></pre></div>    </div>
+  </li>
+  <li><strong>POST з файлом</strong>:
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>httpstat httpbin.org/post -X POST -F "file=@/path/to/file.txt"
+</code></pre></div>    </div>
+  </li>
+  <li><strong>POST з аутентифікацією</strong>:
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>httpstat httpbin.org/post -X POST -u username:password -d "content=test"
+</code></pre></div>    </div>
+  </li>
+</ol>
+
+<h4 id="put-запити">PUT запити:</h4>
+
+<ol>
+  <li><strong>Базовий PUT з даними</strong>:
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>httpstat httpbin.org/put -X PUT -d "key=updatedvalue"
+</code></pre></div>    </div>
+  </li>
+  <li><strong>PUT запит з JSON даними</strong>:
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>httpstat httpbin.org/put -X PUT -H "Content-Type: application/json" -d '{"status":"updated","id":123}'
+</code></pre></div>    </div>
+  </li>
+  <li><strong>PUT запит для завантаження файлу</strong>:
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>httpstat httpbin.org/put -X PUT --upload-file /path/to/file.txt
+</code></pre></div>    </div>
+  </li>
+  <li><strong>PUT запит з керуванням перенаправленням</strong>:
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>httpstat httpbin.org/put -X PUT -L -d "content=test"
+</code></pre></div>    </div>
+  </li>
+  <li><strong>PUT запит з додатковими налаштуваннями безпеки</strong>:
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>httpstat httpbin.org/put -X PUT --tlsv1.2 --ciphers HIGH -d "secure_data=value"
+</code></pre></div>    </div>
+    <h3 id="-висновки">&gt; Висновки</h3>
+  </li>
+</ol>
+
+<ul>
+  <li>інструмент крутий;</li>
+  <li>встановити легко;</li>
+  <li>в статті купа прикладів;</li>
+  <li>треба використовувати, але не витрачайте на цьому етапы багато часу, зрозуміли де повільно і пірнайте глибше.</li>
+</ul>
+
+<p><a href="https://github.com/reorx/httpstat">Перейти до GitHub-репозиторію</a></p>]]></content><author><name></name></author><category term="tools" /><category term="network" /><category term="curl" /><category term="http" /><category term="performance metrics" /><summary type="html"><![CDATA[&gt; Що таке httpstat?]]></summary></entry><entry><title type="html">Як визначити ємність системи?</title><link href="https://sheidaev.com/2025/03/15/capacity-testing.html" rel="alternate" type="text/html" title="Як визначити ємність системи?" /><published>2025-03-15T17:30:00+02:00</published><updated>2025-03-15T17:30:00+02:00</updated><id>https://sheidaev.com/2025/03/15/capacity-testing</id><content type="html" xml:base="https://sheidaev.com/2025/03/15/capacity-testing.html"><![CDATA[<h3 id="-головне-питання-навантажувального-тестування">&gt; Головне питання навантажувального тестування</h3>
 
 <p>Яка кількість одночасних запитів за одиницю часу здатна обробити ваша система без деградації за часом відповіді?</p>
 
