@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Smoke load tests - перший, обовʼязковий крок"
-date: 2025-03-28 20:00:00 +0530
+date: 2025-07-01 20:00:00 +0530
 tags: [testing, k6, performance, load-testing, smoke load test ]
 ---
 
